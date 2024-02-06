@@ -65,7 +65,7 @@ insert into Producto values
 ("TUE2", "CAJA 100 TUERCAS DEL 9", 0.50, 54, 100),
 ("TUE3", "CAJA 100 TUERCAS DEL 12", 0.50, 60, 100);
 
-insert into Factura (Numero, Fecha, Pagado, TotalPrecio, NIF) values
+insert into Factura (Numero, Fecha, Pagado, NIF, TotalPrecio) values
 (5440, "2017-09-05", TRUE, "51664372R", 345),
 (5441, "2017-09-06", FALSE, "51592939K", 1000),
 (5442, "2017-09-07", FALSE, "43434343A ", 789),
@@ -88,6 +88,10 @@ insert into Detalle values
 (5445, "TUE2", 5),
 (5445, "TUE3", 5);
 
+/*Número de factura con mayor importe*/
+select numero
+from Factura
+where TotalPrecio=(select max(TotalPrecio) from Factura);
 
 
 
