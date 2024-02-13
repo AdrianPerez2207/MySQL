@@ -140,14 +140,78 @@ and Relacion.Id_prof LIKE 'P01';
 select nom_al, r.Id_al, nota
 from Alumno, Relacion as r /*as = alias*/
 where Alumno.Id_al=r.Id_al
-and r.Id_al in (select Id_al from Relacion where nota >= 5 and Id_prof LIKE 'P01')
-and r.Id_al in (select Id_al from Relacion where nota >= 5 and Id_prof LIKE 'P02');
+and r.Id_al not in (select Id_al from Relacion where nota < 5 and Id_prof LIKE 'P01')
+and r.Id_al not in (select Id_al from Relacion where nota < 5 and Id_prof LIKE 'P02');
 
 
 /*Nº de alumnos por cada profesor*/
 select count(*) as 'nº alumnos' , Id_prof
 from Relacion
+where nota >= 5
+group by Id_prof;
+/*Profesor que tiene mayor numero de alumno*/
+select count(*) as 'nº alumnos' , Id_prof
+from Relacion
 group by Id_prof
-having nota >= 5;
+having count(*)=(select count(*)
+				from Relacion
+				group by Id_prof
+                order by 1 desc limit 1);
+/*Media de nota que han sacado los alumnos con cada profesor*/
+/*round = redondear, avg = media (redondear la media de las notas con 1 solo decimal.*/
+select round(avg(nota),1) as media_notas, Relacion.Id_prof, Profesor.nom_prof
+from Relacion, Profesor
+where Relacion.Id_prof=Profesor.Id_prof
+group by Profesor.Id_prof;
+
+/*Nota media de cada alumno*/
+select round(avg(nota),1) as media_notas, Relacion.Id_al, Alumno.nom_al
+from Relacion, Alumno
+where Relacion.Id_al=Alumno.Id_al
+group by Alumno.Id_al;
+
+/*Nota media de los alumnos que obtienen una media mayor que 7*/
+select avg(nota) as media_notas, Relacion.Id_al, Alumno.nom_al
+from Relacion, Alumno
+where Relacion.Id_al=Alumno.Id_al
+group by Alumno.Id_al
+having avg(nota) >= 7;
+
+/*Nombre del profesor que tiene a su cargo mas de 3 alumnos*/
+select count(Id_al), nom_prof
+from Profesor, Relacion as r
+where Profesor.Id_prof=r.Id_prof
+group by nom_prof
+having count(r.Id_al) > 3;
+
+/*Cual es el profesor o profesores que tienen más alumnos*/
+select count(Id_al), Id_prof
+from Relacion
+group by Id_prof
+having count(Id_al)=(select count(Id_al)  /*Donde la cuenta de los alumno sea igual a la primera seleccion, ordenador descendentemente*/
+					from Relacion
+					group by Id_prof
+                    order by 1 desc limit 1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
