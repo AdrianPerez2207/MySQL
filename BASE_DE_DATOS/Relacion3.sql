@@ -215,7 +215,18 @@ and relacion2.id_per=periodos.id_per
 and zona.nom_zona="RIVERA" and ciudad.nom_ciud="CIUDAD4";
 
 /* NOMBRE DE LOS CARTEROS QUE HAN TRABAJADO EN LA PROVINCIA DE SEVILLA*/
-select cartero.nom_cart
+select car.nom_cart, prov.nom_prov
+from cartero as car, provincia as prov, relacion2 as rel, ciudad as ciu
+where car.id_cart=rel.id_cart
+and rel.id_ciud=ciu.id_ciud
+and ciu.id_prov=prov.id_prov
+and prov.nom_prov="SEVILLA"
+
+/* NOMBRE Y SUELDO DE LOS CARTEROS QUE NO HAN TRABAJADO EN LA RIVERA DE LA
+CIUDAD4.*/
+
+
+/*FECHA DE INICIO Y FIN DE LOS PERIODOS EN QUE MAS CARTEROS HAN TRABAJADO*/
 
 
 
