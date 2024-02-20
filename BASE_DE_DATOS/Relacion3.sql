@@ -168,6 +168,13 @@ from ciudad, provincia
 where ciudad.id_prov=provincia.id_prov
 and nom_prov="SEVILLA";
 
+/*Usamos JOIN para relacionar las tablas*/
+select nom_ciud, num_hab
+from ciudad
+inner join provincia
+on ciudad.id_prov=provincia.id_prov
+and nom_prov like "SEVILLA";
+
 /* CARTEROS ORDENADOS POR SULEDO.*/
 select nom_cart
 from cartero
@@ -197,12 +204,23 @@ and zona.id_zona=relacion2.id_zona
 and zona.id_zona="Z01" and zona.id_ciud="C02";
 
 /*NOMBRE DE LOS CARTEROS QUE HAN TRABAJADO EN LA ZONA CENTRO DE LA CIUDAD1*/
-select nom_cart
+select distinct nom_cart
 from cartero, zona, relacion2, ciudad
 where cartero.id_cart=relacion2.id_cart
 and zona.id_zona=relacion2.id_zona
 and relacion2.id_ciud=ciudad.id_ciud
 and zona.nom_zona="CENTRO" and ciudad.nom_ciud="CIUDAD1";
+
+/*Con JOIN*/
+select distinct nom_cart
+from cartero
+join relacion2
+on cartero.id_cart=relacion2.id_cart
+join zona
+on zona.id_zona=relacion2.id_zona
+join ciudad
+on relacion2.id_ciud=ciudad.id_ciud
+and zona.nom_zona like "CENTRO" and ciudad.nom_ciud like "CIUDAD1";
 
 /* NOMBRE DE LOS CARTEROS (Y FECHAS DE INICIO Y FIN) QUE HAN TRABAJADO EN LA RIVERA
 DE LA CIUDAD 4.*/
@@ -220,14 +238,31 @@ from cartero as car, provincia as prov, relacion2 as rel, ciudad as ciu
 where car.id_cart=rel.id_cart
 and rel.id_ciud=ciu.id_ciud
 and ciu.id_prov=prov.id_prov
-and prov.nom_prov="SEVILLA"
+and prov.nom_prov="SEVILLA";
 
 /* NOMBRE Y SUELDO DE LOS CARTEROS QUE NO HAN TRABAJADO EN LA RIVERA DE LA
 CIUDAD4.*/
+select car.nom_cart, sueldo
+from cartero as car, zona, relacion2 as rel, ciudad as ciu
+where car.id_cart=rel.id_cart
+and rel.id_ciud=ciu.id_ciud
+and ciu.id_ciud=zona.id_ciud
+and ciu.nom_ciud="CIUDAD4"
+and zona.nom_zona!="RIVERA";
 
 
 /*FECHA DE INICIO Y FIN DE LOS PERIODOS EN QUE MAS CARTEROS HAN TRABAJADO*/
-
+select per.fecha_ini, per.fecha_fin
+from periodos as per, cartero as car, relacion2 as rel
+where per.id_per=rel.id_per
+and rel.id_cart=car.id_cart
+group by per.fecha_ini, per.fecha_fin
+having count(car.id_cart)=(select count(car2.id_cart)
+							from periodos as per2, cartero as car2, relacion2 as rel2
+                            where per2.id_per=rel2.id_per
+							and rel2.id_cart=car2.id_cart
+							group by per2.fecha_ini, per2.fecha_fin
+                            order by count(car2.id_cart) desc limit 1);
 
 
 

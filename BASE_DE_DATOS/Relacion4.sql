@@ -110,7 +110,7 @@ insert into relacion values
 ("ME1", "0123-BVC", "PE2", "PI2", 98),
 ("ME1", "1456-BNL", "PE3", "PI6", 124),
 ("ME1", "4567-BCB", "PE4", "PI5", 245),
-("ME2", "0987-CCC", "PE1", "PI9", "345"),
+("ME2", "0987-CCC", "PE1", "PI9", 345),
 ("ME2", "0987-CCC", "PE1", "PI8", 232),
 ("ME2", "0987-BFG", "PE2", "PI1", 17),
 ("ME2", "4567-BCB", "PE3", "PI7", 99),
@@ -132,8 +132,109 @@ insert into relacion values
 ("ME2", "0123-BVC", "PE6", "PI3", 89);
 
 
+/*DATOS DEL EMPLEADO DE MAYOR SUELDO.*/
+select *
+from mecanico
+where sueldo=(select max(sueldo)
+				from mecanico);
+
+/*DATOS DEL EMPLEADO MAYOR*/
+select *
+from mecanico
+where fech_nac=(select min(fech_nac)
+				from mecanico);
 
 
+/*DATOS DEL EMPLEADO MENOR.*/
+select *
+from mecanico
+where fech_nac=(select max(fech_nac)
+				from mecanico);
+                
+/* DATOS DE TODOS LOS COCHES DIESEL.*/
+select *
+from coche
+where tipo like "DIESEL";
+
+/* DATOS DEL COCHE QUE MAS HA IDO AL TALLER.*/
+select c.*
+from coche as c
+join relacion as r on c.mat_co=r.mat_co
+group by mat_co
+having count(c.mat_co)=(select count(mat_co)
+						from relacion
+                        group by mat_co
+                        order by count(mat_co) desc limit 1);
+
+
+/* PRECIO TOTAL DE TODAS LAS REPARACIONES.*/
+select sum(precio)
+from relacion;
+
+
+/*- NOMBRE DE PIEZA Y TIPO DE LA PIEZA MAS USADA.*/
+select p.nom_piez, t.nom_tipo
+from pieza as p
+join tipo as t on p.id_tipo=t.id_tipo
+join relacion as r on p.id_piez=r.id_piez
+group by p.nom_piez, t.nom_tipo
+having count(r.id_piez)=(select count(r2.id_piez)
+						from relacion as r2
+                        group by r2.id_piez
+                        order by 1 desc limit 1);
+
+/*NOMBRE Y TIPO DE LA PIEZA MENOS USADA.*/
+select p.nom_piez, t.nom_tipo
+from pieza as p
+join tipo as t on p.id_tipo=t.id_tipo
+join relacion as r on p.id_piez=r.id_piez
+group by p.nom_piez, t.nom_tipo
+having count(r.id_piez)=(select count(r2.id_piez)
+						from relacion as r2
+                        group by r2.id_piez
+                        order by 1 asc limit 1);
+                        
+/* MATRICULA, MARCA, MODELO COLOR PIEZA Y TIPO DE TODOS LOS COCHES
+REPARADOS.*/
+select distinct c.*, p.nom_piez, t.nom_tipo
+from coche as c
+join relacion as r on c.mat_co=r.mat_co
+join pieza as p on p.id_piez=r.id_piez
+join tipo as t on t.id_tipo=p.id_tipo
+order by c.mod_co;
+
+/*MODELO DE PIEZA Y TIPO PUESTAS A ‘0123-BVC’*/
+select p.nom_piez, t.nom_tipo
+from pieza as p
+join tipo as t on p.id_tipo=t.id_tipo
+join relacion as r on p.id_piez=r.id_piez
+join coche as c on c.mat_co=r.mat_co
+where r.mat_co like "0123-BVC";
+
+/*-DINERO QUE HA GASTADO EN REPARACIONES 1234-CDF*/
+select sum(precio)
+from relacion as r
+where r.mat_co like "1234-CDF";
+
+/*DATOS DEL COCHE QUE MAS HA GASTADO EN REPARACIONES*/
+select c.*, sum(r.precio)
+from relacion as r
+join coche as c on r.mat_co=c.mat_co
+group by c.mat_co
+having sum(r.precio)=(select sum(precio)
+					from relacion
+                    group by mat_co
+                    order by sum(precio) desc limit 1);
+                    
+/*13. DATOS DEL COCHE QUE MENOS HA GASTADO EN REPARACIONES*/
+select c.*, sum(r.precio)
+from relacion as r
+join coche as c on r.mat_co=c.mat_co
+group by c.mat_co
+having sum(r.precio)=(select sum(precio)
+					from relacion
+                    group by mat_co
+                    order by sum(precio) asc limit 1);
 
 
 
