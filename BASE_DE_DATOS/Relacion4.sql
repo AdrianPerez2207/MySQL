@@ -226,7 +226,7 @@ having sum(r.precio)=(select sum(precio)
                     group by mat_co
                     order by sum(precio) desc limit 1);
                     
-/*13. DATOS DEL COCHE QUE MENOS HA GASTADO EN REPARACIONES*/
+/*DATOS DEL COCHE QUE MENOS HA GASTADO EN REPARACIONES*/
 select c.*, sum(r.precio)
 from relacion as r
 join coche as c on r.mat_co=c.mat_co
@@ -235,7 +235,89 @@ having sum(r.precio)=(select sum(precio)
 					from relacion
                     group by mat_co
                     order by sum(precio) asc limit 1);
+                    
+/*- DATOS DEL COCHE QUE MENOS HA GASTADO EN EL TALLER.*/
+select c.*, sum(r.precio)
+from relacion as r
+join coche as c on r.mat_co=c.mat_co
+group by c.mat_co
+having sum(r.precio)=(select sum(precio)
+					from relacion
+                    group by mat_co
+                    order by sum(precio) asc limit 1);
+                    
+/*- TOTAL DE TODAS LAS REPARACIONES DE ‘ANA LUCAS’*/
+select m.nom_mec, count(m.id_mec)
+from mecanico as m
+join relacion as r on m.id_mec=r.id_mec
+group by m.id_mec
+having m.nom_mec like "ANA LUCAS";
+                        
+/*- DATOS DE LOS COCHES Y LAS PIEZAS PUESTAS POR ‘JUAN ROMUALDO’*/
+select c.*, p.*, m.nom_mec
+from coche as c
+join relacion as r on c.mat_co=r.mat_co
+join pieza as p on r.id_piez=p.id_piez
+join mecanico as m on r.id_mec=m.id_mec
+where m.nom_mec like "JUAN ROMUALDO";
 
+/*- FECHA DE INICIO Y FIN DEL PERIODO EN QUE MAS SE HA TRABAJADO.*/
+select p.fec_ini, p.fec_fin
+from periodo as p
+join relacion as r on p.id_per=r.id_per
+group by r.id_per
+having count(r.id_per)=(select count(id_per)
+						from relacion
+                        group by id_per
+                        order by count(id_per) desc limit 1);
+
+/*FECHA DE INICIO Y FIN DEL PERIODO QUE MENOS SE HA TRABAJADO.*/
+select p.fec_ini, p.fec_fin
+from periodo as p
+join relacion as r on p.id_per=r.id_per
+group by r.id_per
+having count(r.id_per)=(select count(id_per)
+						from relacion
+                        group by id_per
+                        order by count(id_per) asc limit 1);
+
+/*-DINERO QUE SE HA HECHO EN EL PERIODO PE2*/
+select sum(precio)
+from relacion as r
+where id_per like "PE2";
+
+/*DATOS DE LOS COCHES QUE SE LE HALLA PUESTO UN EMBRAGUE*/
+select c.*
+from coche as c
+join relacion as r on c.mat_co=r.mat_co
+join pieza as p on r.id_piez=p.id_piez
+where r.id_piez like "PI5";
+
+/*DATOS DE LOS COCHES A LOS QUE SE LES HALLA CAMBIADO EL ACEITE*/
+select c.*
+from coche as c
+join relacion as r on c.mat_co=r.mat_co
+join pieza as p on r.id_piez=p.id_piez
+where r.id_piez like "PI3";
+
+/*- DATOS DE LOS MECANICOS QUE HALLAN PUESTO ALGUNA PIEZA DE TIPO
+‘ELECTRICIDAD’.*/
+select m.*
+from mecanico as m
+join relacion as r on m.id_mec=r.id_mec
+join pieza as p on r.id_piez=p.id_piez
+join tipo as t on p.id_tipo=t.id_tipo
+where t.nom_tipo like "ELECTRICIDAD";
+
+/*MONTANTE ECONOMICO DE TODAS LAS PIEZAS DE TIPO CHAPA.*/
+select sum(r.precio)
+from relacion as r
+join pieza as p on r.id_piez=p.id_piez
+join tipo as t on p.id_tipo=t.id_tipo
+where t.nom_tipo like "CHAPA";
+
+/*TIPO DE PIEZA QUE MAS DINERO HA DEJADO EN EL TALLER.*/
+/*-DATOS DEL MECANICO QUE MENOS HA TRABAJADO. */
 
 
 
