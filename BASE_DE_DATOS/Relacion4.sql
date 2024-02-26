@@ -317,7 +317,25 @@ join tipo as t on p.id_tipo=t.id_tipo
 where t.nom_tipo like "CHAPA";
 
 /*TIPO DE PIEZA QUE MAS DINERO HA DEJADO EN EL TALLER.*/
+select t.nom_tipo
+from tipo as t
+join pieza as p on t.id_tipo=p.id_tipo
+join relacion as r on p.id_piez=r.id_piez
+group by r.id_piez
+having sum(r.precio)=(select sum(precio)
+					  from relacion
+                      group by id_piez
+                      order by sum(precio) desc limit 1);
+
 /*-DATOS DEL MECANICO QUE MENOS HA TRABAJADO. */
+select m.*
+from mecanico as m
+join relacion as r on  m.id_mec=r.id_mec
+group by r.id_mec
+having count(r.id_mec)=(select count(id_mec)
+						from relacion
+                        group by id_mec
+                        order by count(id_mec) asc limit 1);
 
 
 
