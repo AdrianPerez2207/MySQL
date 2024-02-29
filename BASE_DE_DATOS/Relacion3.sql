@@ -233,22 +233,23 @@ and relacion2.id_per=periodos.id_per
 and zona.nom_zona="RIVERA" and ciudad.nom_ciud="CIUDAD4";
 
 /* NOMBRE DE LOS CARTEROS QUE HAN TRABAJADO EN LA PROVINCIA DE SEVILLA*/
-select car.nom_cart, prov.nom_prov
+select distinct car.nom_cart
 from cartero as car, provincia as prov, relacion2 as rel, ciudad as ciu
 where car.id_cart=rel.id_cart
 and rel.id_ciud=ciu.id_ciud
 and ciu.id_prov=prov.id_prov
-and prov.nom_prov="SEVILLA";
+and prov.nom_prov not like "SEVILLA";
 
 /* NOMBRE Y SUELDO DE LOS CARTEROS QUE NO HAN TRABAJADO EN LA RIVERA DE LA
 CIUDAD4.*/
-select car.nom_cart, sueldo
-from cartero as car, zona, relacion2 as rel, ciudad as ciu
-where car.id_cart=rel.id_cart
-and rel.id_ciud=ciu.id_ciud
-and ciu.id_ciud=zona.id_ciud
-and ciu.nom_ciud="CIUDAD4"
-and zona.nom_zona!="RIVERA";
+select distinct car.nom_cart, sueldo
+from cartero as car
+where car.id_cart not in (select r.id_cart
+							from relacion2 as r
+							join ciudad as c on r.id_ciud like c.id_ciud
+                            join zona as z on z.id_zona like r.id_zona
+                            where z.nom_zona like "RIVERA"
+                            and c.nom_ciud like "CIUDAD4");
 
 
 /*FECHA DE INICIO Y FIN DE LOS PERIODOS EN QUE MAS CARTEROS HAN TRABAJADO*/
@@ -261,8 +262,23 @@ having count(car.id_cart)=(select count(car2.id_cart)
 							from periodos as per2, cartero as car2, relacion2 as rel2
                             where per2.id_per=rel2.id_per
 							and rel2.id_cart=car2.id_cart
-							group by per2.fecha_ini, per2.fecha_fin
+							group by per2.id_per
                             order by count(car2.id_cart) desc limit 1);
+                            
+/*Número de habitantes por cada provincia*/
+select sum(num_hab), id_prov
+from ciudad
+group by id_prov;
+
+/*Nombre de la zona que más carteros ha tenido (y nº de carteros)*/
+select distinct z.nom_zona, count(r.id_cart)
+from zona as z
+join relacion2 as r on z.id_zona=r.id_zona
+group by z.nom_zona, r.id_ciud
+having count(r.id_cart)=(select count(id_cart)
+						from relacion2
+                        group by id_zona, id_ciud
+                        order by 1 desc limit 1);
 
 
 
