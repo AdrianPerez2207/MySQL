@@ -73,9 +73,59 @@ insert into empleado values
 ("A13", "Jesús Marrón", "1999-02-21", "A11", "05"),
 ("A14", "Manuel Amarillo", "2000-09-01", "A11", NULL);
 
+insert into proyecto values
+("GRE", "Gestión residuos", "03"),
+("DAG", "Depuración de aguas", "03"),
+("AEE", "Análisis económico energías", "04"),
+("MES", "Marketing de energía solar", "02");
 
+insert into trabaja values
+("C01", "GRE", 10),
+("C08", "GRE", 54),
+("C01", "DAG", 5),
+("C08", "DAG", 150),
+("B09", "DAG", 100),
+("A14", "DAG", 10),
+("A11", "AEE", 15),
+("C04", "AEE", 20),
+("A11", "MES", 0),
+("A03", "MES", 0);
 
+/*Nombre de los empleados que han trabajado más de 50 horas en proyectos.*/
+select nom_emp, sum(nhoras)
+from empleado
+join trabaja on trabaja.cod_emp like empleado.cod_emp
+join proyecto on trabaja.cod_pro like proyecto.cod_pro
+group by nom_emp
+having sum(nhoras) > 50;
 
+/*Nombre de los departamentos que tienen empleados con apellido “Verde”.*/
+select nom_dep
+from departamento as de
+join empleado as em on em.cod_dep like de.cod_dep
+where nom_emp like "% VERDE";
+
+/*Nombre de los proyectos en los que trabajan más de dos empleados*/
+select nom_pro, count(e.cod_emp)
+from proyecto as p
+join trabaja as t on p.cod_pro like t.cod_pro
+join empleado as e on t.cod_emp like e.cod_emp
+group by p.nom_pro
+having count(e.cod_emp) > 2;
+
+/*Lista de los empleados y el departamento al que pertenecen, con indicación del dinero total que
+deben percibir, a razón de 35 euros la hora. La lista se presentará ordenada por orden alfabético
+de nombre de empleado, y en caso de que no pertenezcan a ningún departamento (NULL) debe
+aparecer la palabra “DESCONOCIDO”.*/
+
+/*Lista de los nombres de todos los empleados, y el número de proyectos en los que está
+trabajando (ten en cuenta que algunos empleados no trabajan en ningúb proyecto).*/
+select nom_emp, count(p.cod_pro)
+from empleado as e
+left join trabaja as t on e.cod_emp like t.cod_emp
+left join proyecto as p on t.cod_pro like p.cod_pro
+group by nom_emp
+order by 2 asc;
 
 
 
