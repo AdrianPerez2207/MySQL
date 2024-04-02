@@ -157,38 +157,38 @@ from coche
 where tipo like "DIESEL";
 
 /* DATOS DEL COCHE QUE MAS HA IDO AL TALLER.*/
-select c.*
+select c.*, count(r.mat_co)
 from coche as c
 join relacion as r on c.mat_co=r.mat_co
-group by mat_co
-having count(c.mat_co)=(select count(mat_co)
+group by r.mat_co
+having count(r.mat_co)=(select count(mat_co)
 						from relacion
                         group by mat_co
-                        order by count(mat_co) desc limit 1);
+                        order by 1 desc limit 1);
 
 
 /* PRECIO TOTAL DE TODAS LAS REPARACIONES.*/
-select sum(precio)
+select sum(precio) as "Precio total reparaciones"
 from relacion;
 
 
 /*- NOMBRE DE PIEZA Y TIPO DE LA PIEZA MAS USADA.*/
-select p.nom_piez, t.nom_tipo
+select p.nom_piez, t.nom_tipo, count(r.id_piez)
 from pieza as p
 join tipo as t on p.id_tipo=t.id_tipo
 join relacion as r on p.id_piez=r.id_piez
-group by p.nom_piez, t.nom_tipo
+group by r.id_piez
 having count(r.id_piez)=(select count(r2.id_piez)
 						from relacion as r2
                         group by r2.id_piez
                         order by 1 desc limit 1);
 
 /*NOMBRE Y TIPO DE LA PIEZA MENOS USADA.*/
-select p.nom_piez, t.nom_tipo
+select p.nom_piez, t.nom_tipo, count(r.id_piez)
 from pieza as p
 join tipo as t on p.id_tipo=t.id_tipo
 join relacion as r on p.id_piez=r.id_piez
-group by p.nom_piez, t.nom_tipo
+group by r.id_piez
 having count(r.id_piez)=(select count(r2.id_piez)
 						from relacion as r2
                         group by r2.id_piez
@@ -208,23 +208,23 @@ select p.nom_piez, t.nom_tipo
 from pieza as p
 join tipo as t on p.id_tipo=t.id_tipo
 join relacion as r on p.id_piez=r.id_piez
-join coche as c on c.mat_co=r.mat_co
 where r.mat_co like "0123-BVC";
 
 /*-DINERO QUE HA GASTADO EN REPARACIONES 1234-CDF*/
-select sum(precio)
+select sum(precio), mat_co
 from relacion as r
-where r.mat_co like "1234-CDF";
+group by mat_co
+having r.mat_co like "1234-CDF";
 
 /*DATOS DEL COCHE QUE MAS HA GASTADO EN REPARACIONES*/
 select c.*, sum(r.precio)
 from relacion as r
 join coche as c on r.mat_co=c.mat_co
-group by c.mat_co
+group by r.mat_co
 having sum(r.precio)=(select sum(precio)
 					from relacion
                     group by mat_co
-                    order by sum(precio) desc limit 1);
+                    order by 1 desc limit 1);
                     
 /*DATOS DEL COCHE QUE MENOS HA GASTADO EN REPARACIONES*/
 select c.*, sum(r.precio)

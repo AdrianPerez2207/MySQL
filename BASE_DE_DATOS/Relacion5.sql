@@ -285,23 +285,74 @@ where d.ciudad like "CÓRDOBA";
 
 
 /*22. Lista de los empleados que son jefes de más de un empleado, junto con el número de empleados
-que están a su cargo.*/
-
-
-
+que están a su cargo.*/                                
+select count(e.cod_emp), jefe.nom_emp
+from empleado as e
+join empleado as jefe on jefe.cod_emp=e.cod_jefe
+group by jefe.cod_emp
+having count(e.cod_emp) > 1;
 
 
 /*23. Listado que indique años y número de empleados contratados cada año, todo ordenado por orden
 ascendente de año.*/
+select year(fecha_ingreso), count(e.cod_emp)
+from empleado as e
+group by year(fecha_ingreso)
+order by 1 asc;
+
+
 /*24. Listar los nombres de proyectos en los que aparezca la palabra “energía”, indicando también el
 nombre del departamento que lo gestiona.*/
+select p.nom_pro, d.nom_dep
+from proyecto as p
+join departamento as d on p.cod_dep=d.cod_dep
+where p.nom_pro like "%ENERGÍA%";
+
 /*25. Lista de departamentos que están en la misma ciudad que el departamento “Gerencia”.*/
+select d.nom_dep, d.ciudad
+from departamento as d
+where d.ciudad=(select ciudad
+				from departamento as d
+				where d.nom_dep like "GERENCIA");
+
 /*26. Lista de departamentos donde exista algún trabajador con apellido “Amarillo”.*/
+select d.nom_dep, e.nom_emp
+from departamento as d
+join empleado as e on d.cod_dep=e.cod_dep
+where e.nom_emp like "%AMARILLO";
+
 /*27. Lista de los nombres de proyecto y departamento que los gestiona, de los proyectos que tienen 0
 horas de trabajo realizadas.*/
+select distinct nom_pro, nom_dep
+from proyecto as p
+join departamento as d on p.cod_dep=d.cod_dep
+join trabaja as t on p.cod_pro=t.cod_pro
+where nhoras = 0;
+
+
 /*28. Asignar el empleado “Manuel Amarillo” al departamento “05”*/
+set sql_safe_updates=0; /*Se utiliza para poder hacer actualizaciones inseguras*/
+update empleado set cod_dep = "05"
+where nom_emp like "MANUEL AMARILLO";
+
+
 /*29. Borrar los departamentos que no tienen empleados.*/
+delete from departamento
+where cod_dep not in (select cod_dep
+						from empleado
+                        where cod_dep is not null);
+
+
 /*30. Añadir todos los empleados del departamento 02 al proyecto MES.*/
+insert into trabaja
+/*cod_emp(consulta), cod_pro, nhoras*/
+select cod_emp, "MES", 0
+	from empleado
+    where cod_dep like "02";
+    
+select *
+from trabaja
+order by nhoras desc;
 
 
 
