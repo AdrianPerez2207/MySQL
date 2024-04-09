@@ -95,9 +95,16 @@ insert into trabaja values
 select nom_emp, sum(nhoras)
 from empleado
 join trabaja on trabaja.cod_emp = empleado.cod_emp
-join proyecto on trabaja.cod_pro = proyecto.cod_pro
 group by nom_emp
 having sum(nhoras) > 50;
+
+/*Nombre de los empleados que han trabajado menos de 50 horas en proyectos.*/
+select nom_emp, ifnull(sum(nhoras), 0) as "horas trabajadas"
+from empleado
+left join trabaja on trabaja.cod_emp = empleado.cod_emp
+group by nom_emp
+having sum(nhoras) < 50
+order by 2 asc;
 
 /*Nombre de los departamentos que tienen empleados con apellido “Verde”.*/
 select nom_dep
@@ -106,20 +113,20 @@ join empleado as em on em.cod_dep = de.cod_dep
 where nom_emp like "% VERDE";
 
 /*Nombre de los proyectos en los que trabajan más de dos empleados*/
-select nom_pro, count(e.cod_emp)
+select nom_pro, count(t.cod_emp) as "nº empleados"
 from proyecto as p
 join trabaja as t on p.cod_pro = t.cod_pro
-join empleado as e on t.cod_emp = e.cod_emp
-group by p.nom_pro
-having count(e.cod_emp) > 2;
+group by t.cod_pro
+having count(t.cod_emp) > 2;
+
 
 /*Lista de los empleados y el departamento al que pertenecen, con indicación del dinero total que
 deben percibir, a razón de 35 euros la hora. La lista se presentará ordenada por orden alfabético
 de nombre de empleado, y en caso de que no pertenezcan a ningún departamento (NULL) debe
 aparecer la palabra “DESCONOCIDO”.*/
-select nom_emp, ifnull(nom_dep, "DESCONOCIDO"), (sum(nhoras) * 35) as dinero 
+select e.nom_emp as "EMPLEADO", ifnull(nom_dep, "DESCONOCIDO") as "DEPARTAMENTO", ifnull((sum(nhoras) * 35), "No ha trabajado") as dinero 
 from empleado as e
-join trabaja as t on e.cod_emp = t.cod_emp
+left join trabaja as t on e.cod_emp = t.cod_emp
 left join departamento as d on e.cod_dep = d.cod_dep
 group by e.cod_emp
 order by 1 asc; 
@@ -127,34 +134,41 @@ order by 1 asc;
 
 
 /*Lista de los nombres de todos los empleados, y el número de proyectos en los que está
-trabajando (ten en cuenta que algunos empleados no trabajan en ningúb proyecto).*/
+trabajando (ten en cuenta que algunos empleados no trabajan en ningún proyecto).*/
 select nom_emp, count(p.cod_pro)
 from empleado as e
 left join trabaja as t on e.cod_emp = t.cod_emp
 left join proyecto as p on t.cod_pro = p.cod_pro
-group by nom_emp
-order by 2 asc;
+group by e.cod_emp
+order by 1 asc;
 
 /*6. Lista de empleados que trabajan en Málaga o en Almería.*/
 select *
 from empleado as e
 join departamento as d on e.cod_dep = d.cod_dep
-where ciudad like "MÁLAGA"
-or ciudad like "GRANADA";
+where ciudad in ("MÁLAGA", "ALMERIA")
+order by e.nom_emp;
+
+select *
+from empleado as e
+join departamento as d on e.cod_dep = d.cod_dep
+where (ciudad like "MÁLAGA"
+or ciudad like "ALMERIA")
+order by e.nom_emp;
 
 /*7. Lista alfabética de los nombres de empleado y los nombres de sus jefes. Si el empleado no tiene
 jefe debe aparecer la cadena “Sin Jefe”.*/
-select e.nom_emp, ifnull(jefe.nom_emp, "Sin jefe")
+select e.nom_emp as "Empleado", ifnull(jefe.nom_emp, "Sin jefe") as "Jefe"
 from empleado as e
 left join empleado as jefe on jefe.cod_emp = e.cod_jefe
-order by 1 desc;
+order by jefe.nom_emp asc;
 
 /*8. Fechas de ingreso mínima. y máxima, por cada departamento.*/
-select nom_dep, min(fecha_ingreso), max(fecha_ingreso)
+select nom_dep as "Departamento", min(fecha_ingreso) as "Fecha mínima", max(fecha_ingreso) as "Fecha máxima"
 from empleado as e
-join departamento as d on e.cod_dep = d.cod_dep
+right join departamento as d on e.cod_dep = d.cod_dep
 group by d.cod_dep
-order by 2 desc;
+order by 1 asc;
 
 /*9. Nombres de empleados que trabajan en el mismo departamento que Carmen Violeta.*/
 select nom_emp
@@ -162,10 +176,11 @@ from empleado as e
 join departamento as d on e.cod_dep = d.cod_dep
 where d.cod_dep = (select cod_dep
 					from empleado as e
-                    where nom_emp like "CARMEN VIOLETA");
+                    where nom_emp like "CARMEN VIOLETA")
+and nom_emp not like "CARMEN VIOLETA";
 
 /*10. Media del año de ingreso en la empresa de los empleados que trabjan en algún proyecto.*/
-select distinct round(avg(year(fecha_ingreso)))
+select distinct round(avg(year(fecha_ingreso))) as "Media año ingreso"
 from empleado as e
 join trabaja as t on e.cod_emp = t.cod_emp;
 
@@ -181,7 +196,7 @@ and (e.nom_emp like "% ROJO" or e.nom_emp like "% VERDE");
 
 /*12. Suponiendo que la letra que forma parte del código de empleado es la categoría laboral, listar los
 empleados de categoría B que trabajan en algún proyecto.*/
-select e.nom_emp, e.cod_emp
+select e.nom_emp as "Empleados", e.cod_emp as "Código"
 from empleado as e
 join trabaja as t on e.cod_emp = t.cod_emp
 where e.cod_emp like "B%";
@@ -190,9 +205,9 @@ where e.cod_emp like "B%";
 /*13. Listado de nombres de departamento, ciudad del departamento y número de empleados del
 departamento. Ordenada por nombre de ciudad y a igualdad de esta por el nombre del
 departamento.*/
-select nom_dep, ciudad, count(e.cod_emp)
+select nom_dep as "Departamento", ciudad, count(e.cod_emp) as "Cuenta empleados"
 from departamento as d
-join empleado as e on d.cod_dep = e.cod_dep
+left join empleado as e on d.cod_dep = e.cod_dep
 group by d.cod_dep
 order by 2 desc, 1; /*ordenamos por nombre de ciudad y despartamento*/
 

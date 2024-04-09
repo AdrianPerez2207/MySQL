@@ -61,6 +61,7 @@ create table if not exists vendart(
     on delete cascade
 )
 engine=InnoDB;
+describe vendart;
 
 insert into ciudad values
 ("CI1", "SEVILLA"),
@@ -103,33 +104,123 @@ insert into articulos values
 insert into vendart values
 ("VN1", "AR1", "2005-02-01"),
 ("VN1", "AR2", "2005-02-01"),
-("VN2", "AR3", "2005-02-01"),
-("VN1", "AR4", "2005-02-01"),
-("VN1", "AR5", "2005-02-01"),
-("VN3", "AR6", "2005-02-01"),
-("VN3", "AR7", "2005-02-01"),
-("VN3", "AR8", "2005-02-01"),
-("VN4", "AR9", "2005-02-01"),
-("VN4", "AR8", "2005-02-01"),
-("VN5", "AR7", "2005-02-01"),
-("VN5", "AR6", "2005-02-01"),
-("VN6", "AR5", "2005-02-01"),
-("VN6", "AR4", "2005-02-01"),
-("VN7", "AR3", "2005-02-01"),
-("VN7", "AR2", "2005-02-01"),
-("VN1", "AR2", "2005-02-01"),
-("VN2", "AR1", "2005-02-01"),
-("VN3", "AR2", "2005-02-01"),
-("VN4", "AR3", "2005-02-01"),
-("VN5", "AR4", "2005-02-01"),
-("VN5", "AR5", "2005-02-01"),
-("VN6", "AR6", "2005-02-01"),
-("VN5", "AR7", "2005-02-01"),
-("VN4", "AR8", "2005-02-01"),
-("VN3", "AR9", "2005-02-01"),
-("VN7", "AR9", "2005-02-01");
+("VN2", "AR3", "2005-03-01"),
+("VN1", "AR4", "2005-04-01"),
+("VN1", "AR5", "2005-06-01"),
+("VN3", "AR6", "2005-07-01"),
+("VN3", "AR7", "2005-08-01"),
+("VN3", "AR8", "2001-09-12"),
+("VN4", "AR9", "2005-10-10"),
+("VN4", "AR8", "2005-11-01"),
+("VN5", "AR7", "2005-10-01"),
+("VN5", "AR6", "2005-11-02"),
+("VN6", "AR5", "2005-11-03"),
+("VN6", "AR4", "2005-11-04"),
+("VN7", "AR3", "2005-11-05"),
+("VN7", "AR2", "2005-11-07"),
+("VN1", "AR2", "2005-11-06"),
+("VN2", "AR1", "2004-10-08"),
+("VN3", "AR2", "1999-01-01"),
+("VN4", "AR3", "2005-10-25"),
+("VN5", "AR4", "2005-10-26"),
+("VN5", "AR5", "2005-10-27"),
+("VN6", "AR6", "2005-10-28"),
+("VN5", "AR7", "2005-10-28"),
+("VN4", "AR8", "2005-10-30"),
+("VN3", "AR9", "2005-08-24"),
+("VN7", "AR9", "2005-08-25");
 
-/*SOLO FALTAN TERMINAR DE INSERTAR LAS FECHAS*/
+/*1.- CIUDAD DONDE MAS SE VENDIO*/
+select c.nom_ciudad, count(ven.id_art)
+from ciudad as c
+inner join tienda as t on c.id_ciudad=t.id_ciudad
+inner join vendedores as v on t.id_tienda=v.id_tienda
+inner join vendart as ven on v.id_vend=ven.id_vend
+group by c.nom_ciudad
+having count(ven.id_art) = (select count(id_art)
+							from vendart as ven
+							inner join vendedores as v on v.id_vend=ven.id_vend
+							inner join tienda as t on t.id_tienda=v.id_tienda
+                            inner join ciudad as c on c.id_ciudad=t.id_ciudad
+                            group by c.nom_ciudad
+                            order by 1 desc limit 1);
+							
+
+
+/*2.- TIENDA DONDE MAS SE VENDIO*/
+select t.nom_tienda as "Tienda", count(ven.id_art) as "Ventas"
+from tienda as t
+inner join vendedores as v on t.id_tienda=v.id_tienda
+inner join vendart as ven on v.id_vend=ven.id_vend
+group by t.nom_tienda
+having count(ven.id_art)=(select count(id_art)
+							from vendart as ven
+							inner join vendedores as v on v.id_vend=ven.id_vend
+							inner join tienda as t on t.id_tienda=v.id_tienda
+                            group by t.nom_tienda
+                            order by 1 desc limit 1);
+
+
+
+
+/*3.- VENDEDOR QUE MAS VENDIO*/
+select nom_vend as "Vendedores", count(ven.id_art) as "Ventas"
+from vendedores as v 
+inner join vendart as ven on v.id_vend=ven.id_vend
+group by v.id_vend
+having count(ven.id_art)=(select count(ven.id_art)
+							from vendart as ven
+                            inner join vendedores as v on ven.id_vend=v.id_vend
+                            group by v.id_vend
+                            order by 1 desc limit 1);
+
+
+/*4.-NOMBRE DE CIUDAD, VENDEDOR, ARTICULO, TIENDA, TIPO Y PRECIO DE TODO LO VENDIDO*/
+select nom_ciudad as "Ciudad", nom_vend as "Vendedor", nom_art as "Artículo", nom_tienda as "Tienda", 
+		nom_tipo as "Tipo artículo", precio as "Vendido"
+from ciudad as c
+inner join tienda as t on c.id_ciudad=t.id_ciudad
+inner join vendedores as v on t.id_tienda=v.id_tienda
+inner join vendart as ven on v.id_vend=ven.id_vend
+inner join articulos as a on ven.id_art=a.id_art
+inner join tipoart as tipo on a.id_tipo=tipo.id_tipo;
+
+
+
+/*5.- NOMBRE DEL TIPO DE ARTICULO MAS CARO*/
+select nom_tipo as "Tipo artículo", max(precio) as "Precio"
+
+
+/*6.- DATOS DEL VENDEDOR QUE MAS GANA*/
+/*7.- MONTANTE DE TODOS LOS ARTICULOS DE TIPO BAZAR*/
+/*8.- MONTANTE DE TODO LO QUE SE VENDIO EN ALMERIA*/
+/*9.- MONTANTE DE TODO LO QUE SE VENDIO EN LUNA*/
+/*10.- NOMBRE DE ARTICULO, TIPO PRECIO, TIENDA, CIUDAD Y FECHA DE LO QUE VENDIO MANUEL*/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
+/**/
 
 
 
