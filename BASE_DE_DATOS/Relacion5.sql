@@ -215,7 +215,7 @@ order by 2 desc, 1; /*ordenamos por nombre de ciudad y despartamento*/
 
 /*14. Lista de nombres de proyecto y suma de horas trabajadas en él, de los proyectos en los que se ha
 trabajado más horas de la media de horas trabajadas en todos los proyectos.*/
-select p.nom_pro, sum(t.nhoras)
+select p.nom_pro "Proyectos", sum(t.nhoras) as "Horas"
 from proyecto as p
 join trabaja as t on p.cod_pro = t.cod_pro
 group by t.cod_pro
