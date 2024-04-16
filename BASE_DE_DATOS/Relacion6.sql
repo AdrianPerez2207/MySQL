@@ -188,39 +188,194 @@ inner join tipoart as tipo on a.id_tipo=tipo.id_tipo;
 
 
 /*5.- NOMBRE DEL TIPO DE ARTICULO MAS CARO*/
-select nom_tipo as "Tipo artículo", max(precio) as "Precio"
-
+select t.nom_tipo as "Tipo artículo", a.precio as "Precio"
+from tipoart as t
+inner join articulos as a on t.id_tipo=a.id_tipo
+where a.precio=(select max(precio)
+						from articulos);
 
 /*6.- DATOS DEL VENDEDOR QUE MAS GANA*/
+select v.*
+from vendedores as v
+where salario=(select max(salario)
+				from vendedores);
+
 /*7.- MONTANTE DE TODOS LOS ARTICULOS DE TIPO BAZAR*/
+select sum(a.precio) as "MONTANTE"
+from articulos as a
+inner join tipoart as t on a.id_tipo=t.id_tipo
+inner join vendart as ven on a.id_art=ven.id_art
+where nom_tipo like "BAZAR";
+
+
 /*8.- MONTANTE DE TODO LO QUE SE VENDIO EN ALMERIA*/
+select sum(a.precio) as "MONTANTE"
+from articulos as a
+inner join vendart as ven on a.id_art=ven.id_art
+inner join vendedores as v on ven.id_vend=v.id_vend
+inner join tienda as t on v.id_tienda=t.id_tienda
+inner join ciudad as c on t.id_ciudad=c.id_ciudad
+where nom_ciudad like "ALMERIA";
+
+
 /*9.- MONTANTE DE TODO LO QUE SE VENDIO EN LUNA*/
-/*10.- NOMBRE DE ARTICULO, TIPO PRECIO, TIENDA, CIUDAD Y FECHA DE LO QUE VENDIO MANUEL*/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
-/**/
+select ifnull(sum(a.precio), "NO SE HA VENDIDO NADA") as "MONTANTE"
+from articulos as a
+inner join vendart as ven on a.id_art=ven.id_art
+inner join vendedores as v on ven.id_vend=v.id_vend
+inner join tienda as t on v.id_tienda=t.id_tienda
+where nom_tienda like "LUNA";
+
+/*10.- NOMBRE DE ARTICULO, TIPO, PRECIO, TIENDA, CIUDAD Y FECHA DE LO QUE VENDIO MANUEL*/
+select a.nom_art as Articulo, a.precio as Precio, tipo.nom_tipo as Tipo,
+ t.nom_tienda as Tienda, c.nom_ciudad as Ciudad, ven.fech_venta as Fecha
+from tipoart as tipo
+inner join articulos as a on tipo.id_tipo=a.id_tipo
+inner join vendart as ven on a.id_art=ven.id_art
+inner join vendedores as v on ven.id_vend=v.id_vend
+inner join tienda as t on v.id_tienda=t.id_tienda
+inner join ciudad as c on t.id_ciudad=c.id_ciudad
+where nom_vend like "MANUEL";
+
+/*11.- TOTAL DEL SALARIO DE TODOS LOS TRABAJADORES DE ALMERIA*/
+select sum(v.salario) as "Salario total"
+from vendedores as v
+inner join tienda as t on v.id_tienda=t.id_tienda
+inner join ciudad as c on t.id_ciudad=c.id_ciudad
+where nom_ciudad like "ALMERIA";
+
+/*12.- NOMBRE DE LOS QUE VENDIERON LECHE*/
+select v.nom_vend as "Nombre vendedores"
+from vendedores as v
+inner join vendart as ven on ven.id_vend=v.id_vend
+inner join articulos as a on ven.id_art=a.id_art
+where nom_art like "LECHE";
+
+/*13.- NOMBRE DE LOS QUE VENDIERON ARTICULOS DE TIPO BAZAR.*/
+select distinct v.nom_vend as "Nombre vendedores"
+from vendedores as v
+inner join vendart as ven on ven.id_vend=v.id_vend
+inner join articulos as a on ven.id_art=a.id_art
+inner join tipoart as t on a.id_tipo=t.id_tipo
+where nom_tipo like "BAZAR";
+
+/*14.- ARTICULOS DE TIPO BAZAR MAS VENDIDOS*/
+select a.nom_art as "Artículo", count(ven.id_art) as "Ventas"
+from articulos as a
+inner join vendart as ven on a.id_art=ven.id_art
+inner join tipoart as t on a.id_tipo=t.id_tipo
+group by t.nom_tipo, a.nom_art
+having nom_tipo like "BAZAR"
+and count(ven.id_art)=(select count(ven.id_art)
+						from articulos as a
+						inner join tipoart as t on a.id_tipo=t.id_tipo
+						inner join vendart as ven on a.id_art=ven.id_art
+						group by a.nom_art, t.nom_tipo
+						having nom_tipo like "BAZAR"
+						order by 1 desc limit 1);
+
+
+/*15.- NOMBRE DEL TIPO CON QUE MAS SE GANA*/
+select sum(precio)
+from tipoart as t 
+inner join articulos as a on t.id_tipo=a.id_tipo
+inner join vendart as ven on a.id_art=ven.id_art
+group by a.id_tipo
+order by 1 desc;
+
+
+/*16.- SALARIO Y NOMBRE DE TODOS LOS QUE VENDIERON BOMBILLAS.*/
+select distinct v.salario, v.nom_vend as "Empleado"
+from vendedores as v
+inner join vendart as ven on v.id_vend=ven.id_vend
+inner join articulos as a on ven.id_art=a.id_art
+where nom_art like "BOMBILLA"
+order by 1;
+
+/*17.- TIENDAS Y CIUDAD DONDE SE VENDIO ALGUNA RADIO.*/
+select distinct t.nom_tienda, c.nom_ciudad
+from tienda as t
+inner join ciudad as c on t.id_ciudad=c.id_ciudad
+inner join vendedores as v on t.id_tienda=v.id_tienda
+inner join vendart as ven on v.id_vend=ven.id_vend
+inner join articulos as a on ven.id_art=a.id_art
+where nom_art like "RADIO";
+
+/*18.- SUBIR EL SUELDO UN 2% A LOS EMPLEADOS DE SEVILLA*/
+update vendedores set salario=(salario * 1.02)
+where id_tienda in (select t.id_tienda
+				from tienda as t
+                inner join ciudad as c on t.id_ciudad=c.id_ciudad
+                where nom_ciudad like "SEVILLA");
+select *
+from vendedores;
+
+/*19.- BAJA EL SUELDO UN 1% A LOS QUE NO HAYAN VENDIDO LECHE*/
+update vendedores set salario=(salario * 0.99)
+where id_vend not in (select id_vend
+						from vendart as ven
+                        inner join articulos
+                        where nom_art like "LECHE");
+
+/*20.- SUBIR EL PRECIO UN 3% AL ARTICULO MAS VENDIDO*/
+update articulos set precio=(precio * 1.03)
+where id_art in (select id_art
+				from vendart as ven
+                group by id_art
+                having id_art=(select id_art
+								from vendart as ven
+                                group by id_art
+								order by 1 limit 1));
+select *
+from articulos;
+
+/*21.- SUBIR EL SUELDO UN 2% A LOS ARTICULOS DE TIPO MAS VENDIDO*/
+create view masVendido as (select a.id_tipo
+								from vendart as ven
+								inner join articulos as a
+								on ven.id_art=a.id_art
+								group by a.id_tipo
+								having count(ven.id_art)=(select count(ven.id_art)
+															from vendart as ven
+															inner join articulos as a
+															on ven.id_art=a.id_art
+															group by a.id_tipo
+															order by 1 limit 1));
+
+select a.id_tipo
+from vendart as ven
+inner join articulos as a
+on ven.id_art=a.id_art
+group by a.id_tipo
+having count(ven.id_art)=(select count(ven.id_art)
+							from vendart as ven
+							inner join articulos as a
+							on ven.id_art=a.id_art
+							group by a.id_tipo
+							order by 1 limit 1);
+
+update articulos set precio=(precio * 1.02)
+where id_tipo in (select id_tipo
+				from masVendido);
+                
+select * from articulos;
+
+
+/*22.- BAJAR UN 3% TODOS LOS ARTICULOS DE PAPELERIA*/
+/*23.- SUBIR EL PRECIO UN 1% A TODOS LOS ARTICULOS VENDIDOS EN ALMERIA*/
+/*24.- BAJAR EL PRECIO UN 5% AL ARTICULO QUE MAS HACE QUE NO SE VENDE*/
+/*25.- CERRAR LA TIENDA QUE MENOS HA VENDIDO*/
+/*26.- LA TIENDA LUNA PASA A LLAMARSE SOL Y LUNA*/
+/*27.- DESPEDIR AL TRABAJADOR QUE MAS VENDIO*/
+/*28.- LAS TIENDAS QUE NO VENDIERON LAPICES PASAN TODAS A SEVILLA*/
+/*29.- DESPEDIR AL QUE MENOS DINERO HA HECHO VENDIENDO.*/
+/*30.- EL ARTICULO QUE MENOS SE HA VENDIDO DEJAR DE ESTAR EN STOCK*/
+/*31.- EL ARTICULO QUE MENOS DINERO HA GENERADO DEJA DE ESTAR EN STOCK*/
+/*32.- EL TIPO DE ARTICULO MENOS VENDIDO DEJA DE ESTAR EN STOCK*/
+/*33.- EL TIPO DE ARTICULO CON EL QUE MENOS SE HA GANADO DEJA DE ESTAR EN STOCK*/
+/*34.- SE DESPIDEN A TODOS LOS TRABAJADORES QUE NO HAN VENDIDO ARTICULOS DE BAZAR*/
+/*35.- SE CIERRA LA TIENDA QUE MENOS DINERO HA GANADO.*/
+/*36.- TODOS LOS TRABAJADORES DE SEVILLA PASAN A LA TIENDA JOYMON*/
 
 
 

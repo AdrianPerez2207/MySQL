@@ -245,7 +245,7 @@ order by 2 asc;
 
 
 /*17. Lista de empleados que no son jefes de ningún otro empleado.*/
-select e.nom_emp
+select e.*
 from empleado as e
 where not exists (select nom_emp
 					from empleado as e2
@@ -256,42 +256,36 @@ where not exists (select nom_emp
 decide que una medida de la productividad puede ser el número de horas trabajadas por
 empleados del departamento en proyectos, dividida por los empleados de ese departamento.
 ¿Qué departamento es el más productivo?*/
-select nom_dep, sum(nhoras)
+select nom_dep as "Departamento", round(sum(nhoras)/count(t.cod_emp)) as "Productividad"
 from departamento as d
 join empleado as e on d.cod_dep = e.cod_dep
 join trabaja as t on e.cod_emp = t.cod_emp
-group by d.cod_dep
-having sum(nhoras)/count(e.cod_emp) = (select sum(nhoras)/count(e.cod_emp)
+group by t.cod_emp
+having sum(nhoras)/count(e.cod_emp) = (select sum(nhoras)/count(t.cod_emp)
 										from trabaja as t
                                         join empleado as e on t.cod_emp = e.cod_emp
                                         join departamento as d on e.cod_dep = d.cod_dep
-										group by d.cod_dep
+										group by t.cod_emp
                                         order by 1 desc limit 1);
-
-
-
 
 /*19. Lista donde aparezcan los nombres de empleados, nombres de sus departamentos y nombres de
 proyectos en los que trabajan. Los empleados sin departamento, o que no trabajen en proyectos
 aparecerán en la lista y en lugar del departamento o el proyecto aparecerá “*****”.*/
-select nom_emp, ifnull(nom_dep, "*****"), ifnull(nom_pro, "*****")
+select distinct nom_emp as "Empleado", ifnull(nom_dep, "*****") as "Departamento", ifnull(nom_pro, "*****") as "Proyecto"
 from empleado as e
-left join trabaja as t on e.cod_emp = t.cod_emp
 left join departamento as d on e.cod_dep = d.cod_dep
+left join trabaja as t on e.cod_emp = t.cod_emp
 left join proyecto as p on d.cod_dep = p.cod_dep
-order by 3 asc;
-
-
-
+order by 1;
 
 /*20. Lista de los empleados indicando el número de días que llevan trabajando en la empresa.*/
-select nom_emp, datediff(now(), fecha_ingreso) /*Función para calcular los dias entre fechas*/
+select nom_emp, ifnull(datediff(now(), fecha_ingreso), "0") /*Función para calcular los dias entre fechas*/
 from empleado
 order by 2;
 
 
 /*21. Número de proyectos en los que trabajan empleados de la ciudad de Córdoba.*/
-select count(p.cod_pro)
+select count(p.cod_pro) as "Nº Proyectos"
 from proyecto as p
 join trabaja as t on p.cod_pro = t.cod_pro
 join empleado as e on t.cod_emp = e.cod_emp
@@ -301,7 +295,7 @@ where d.ciudad like "CÓRDOBA";
 
 /*22. Lista de los empleados que son jefes de más de un empleado, junto con el número de empleados
 que están a su cargo.*/                                
-select count(e.cod_emp), jefe.nom_emp
+select count(e.cod_emp) as "Empleados", jefe.nom_emp as "Jefe"
 from empleado as e
 join empleado as jefe on jefe.cod_emp=e.cod_jefe
 group by jefe.cod_emp
@@ -310,11 +304,10 @@ having count(e.cod_emp) > 1;
 
 /*23. Listado que indique años y número de empleados contratados cada año, todo ordenado por orden
 ascendente de año.*/
-select year(fecha_ingreso), count(e.cod_emp)
+select year(fecha_ingreso) as "Años", count(e.cod_emp) as "Empleados contratados"
 from empleado as e
 group by year(fecha_ingreso)
 order by 1 asc;
-
 
 /*24. Listar los nombres de proyectos en los que aparezca la palabra “energía”, indicando también el
 nombre del departamento que lo gestiona.*/
@@ -328,7 +321,8 @@ select d.nom_dep, d.ciudad
 from departamento as d
 where d.ciudad=(select ciudad
 				from departamento as d
-				where d.nom_dep like "GERENCIA");
+				where d.nom_dep like "GERENCIA")
+and d.nom_dep != "GERENCIA";
 
 /*26. Lista de departamentos donde exista algún trabajador con apellido “Amarillo”.*/
 select d.nom_dep, e.nom_emp
@@ -338,25 +332,23 @@ where e.nom_emp like "%AMARILLO";
 
 /*27. Lista de los nombres de proyecto y departamento que los gestiona, de los proyectos que tienen 0
 horas de trabajo realizadas.*/
-select distinct nom_pro, nom_dep
+select distinct nom_pro, nom_dep, sum(nhoras)
 from proyecto as p
 join departamento as d on p.cod_dep=d.cod_dep
 join trabaja as t on p.cod_pro=t.cod_pro
-where nhoras = 0;
-
+group by t.cod_pro
+having sum(nhoras)=0;
 
 /*28. Asignar el empleado “Manuel Amarillo” al departamento “05”*/
-set sql_safe_updates=0; /*Se utiliza para poder hacer actualizaciones inseguras*/
+/*set sql_safe_updates=0; Se utiliza para poder hacer actualizaciones inseguras*/
 update empleado set cod_dep = "05"
 where nom_emp like "MANUEL AMARILLO";
-
 
 /*29. Borrar los departamentos que no tienen empleados.*/
 delete from departamento
 where cod_dep not in (select cod_dep
 						from empleado
                         where cod_dep is not null);
-
 
 /*30. Añadir todos los empleados del departamento 02 al proyecto MES.*/
 insert into trabaja
