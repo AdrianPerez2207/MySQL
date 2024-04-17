@@ -342,18 +342,6 @@ create view masVendido as (select a.id_tipo
 															group by a.id_tipo
 															order by 1 limit 1));
 
-select a.id_tipo
-from vendart as ven
-inner join articulos as a
-on ven.id_art=a.id_art
-group by a.id_tipo
-having count(ven.id_art)=(select count(ven.id_art)
-							from vendart as ven
-							inner join articulos as a
-							on ven.id_art=a.id_art
-							group by a.id_tipo
-							order by 1 limit 1);
-
 update articulos set precio=(precio * 1.02)
 where id_tipo in (select id_tipo
 				from masVendido);
