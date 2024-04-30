@@ -419,7 +419,19 @@ from tienda;
 
 
 /*27.- DESPEDIR AL TRABAJADOR QUE MAS VENDIO*/
-
+create view vendedorABorrar as select v.id_vend
+								from vendedores as v
+								inner join vendart as ven on v.id_vend=ven.id_vend
+								group by v.id_vend
+								having count(ven.id_art)=(select count(ven.id_art)
+															from vendart as ven
+															inner join vendedores as v on ven.id_vend=v.id_vend
+															group by v.id_vend
+															order by 1 limit 1);
+delete from vendedores
+where id_vend in (select id_vend
+					from vendedorABorrar);
+select * from vendedores;
 
 
 /*28.- LAS TIENDAS QUE NO VENDIERON LAPICES PASAN TODAS A SEVILLA*/
