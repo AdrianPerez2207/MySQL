@@ -125,7 +125,6 @@ end $$
 delimiter ;
 select dias_transcurridos("2018-01-01", "2008-01-01");
 
-
 /*7. Escribe una función que reciba una cadena de entrada y devuelva la misma cadena pero sin acentos. La
 función tendrá que reemplazar todas las vocales que tengan acento por la misma vocal pero sin acento.
 Por ejemplo, si la función recibe como parámetro de entrada la cadena María la función debe devolver
