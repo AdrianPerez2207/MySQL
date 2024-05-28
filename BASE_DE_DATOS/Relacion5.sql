@@ -361,6 +361,38 @@ select *
 from trabaja
 order by nhoras desc;
 
+/*---------FUNCIONES-------------*/
+/*Escribe un procedimiento que modifique la localidad de un departamento. El
+procedimiento recibirá como parámetros el código del departamento y la nueva localidad. Usa la base de datos relacion6.*/
+
+delimiter $$
+drop procedure if exists modificar_localidad $$
+create procedure modificar_localidad(in cod_departamento char(2), in nueva_localidad varchar(20))
+begin
+	update departamento set ciudad = nueva_localidad
+    where cod_dep = cod_departamento;
+end $$
+delimiter ;
+call modificar_localidad("02", "Granada");
+select * from departamento;
+
+/*8. Escribe un procedimiento que reciba como parámetro de entrada el nombre de
+un proyecto y que devuelva como salida el nombre de los departamentos al que
+pertenece.*/
+delimiter $$
+drop procedure if exists nombre_departamentos $$
+create procedure nombre_departamentos(in nom_proyecto varchar(30))
+begin
+	select nom_dep
+    from departamento as d
+    join proyecto as p on d.cod_dep=p.cod_dep
+    where nom_pro = nom_proyecto;
+end $$
+delimiter ;
+call nombre_departamentos("Gestión residuos");
+
+
+
 
 
 

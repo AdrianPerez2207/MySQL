@@ -130,6 +130,22 @@ select dias_transcurridos("2018-01-01", "2008-01-01");
 función tendrá que reemplazar todas las vocales que tengan acento por la misma vocal pero sin acento.
 Por ejemplo, si la función recibe como parámetro de entrada la cadena María la función debe devolver
 la cadena Maria*/
+delimiter $$
+drop function if exists cadenas$$
+create function cadenas(caracteres varchar(30))
+returns varchar(30)
+begin
+	set caracteres = replace(caracteres, "á", "a");
+    set caracteres = replace(caracteres, "é", "e");
+    set caracteres = replace(caracteres, "í", "i");
+    set caracteres = replace(caracteres, "ó", "o");
+    set caracteres = replace(caracteres, "ú", "u");
+	return caracteres;
+end $$
+delimiter ;
+select cadenas("María");
+
+
 
 
 
